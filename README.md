@@ -1,6 +1,6 @@
 # VKQuickLook
 
-Native macOS Finder thumbnails and Quick Look previews for Keyence `.vk4` and `.vk6` measurement files.
+Native desktop thumbnails and previews for Keyence `.vk4` and `.vk6` measurement files.
 
 VKQuickLook is an independent open-source project and is not affiliated with,
 endorsed by, or sponsored by KEYENCE CORPORATION. KEYENCE is used only to
@@ -11,6 +11,7 @@ This repository contains:
 - A native Swift Quick Look Thumbnail extension.
 - A native Swift Quick Look Preview extension.
 - A Swift command-line renderer, `VKQuickLookRender`, built from the same renderer source as the Finder extensions.
+- A standalone Python GNOME/Nautilus thumbnailer, `vk-thumbnailer`, for Ubuntu/Linux workstations.
 - Build, install, and validation scripts for local development and signed distribution builds.
 
 ## Scope
@@ -31,13 +32,19 @@ Not supported by this extension:
 
 The installed Finder extension renders natively in Swift because Quick Look extensions run in a sandbox and should not depend on external runtimes.
 
-The native path is intentionally narrow:
+The macOS native path is intentionally narrow:
 
 - VK6 thumbnails/previews use the wrapper BMP preview in the VK6 container.
 - VK4 thumbnails use embedded 24-bit thumbnail sections in the VK4 offset table.
 - VK4 previews use full 24-bit `color_light`, then `color_peak`, then thumbnail fallbacks.
 
-The repository is Swift-only. `VKQuickLookRender` and the Finder extensions share the same native renderer source.
+`VKQuickLookRender` and the Finder extensions share the same native renderer source.
+
+The Linux path is a standalone Python thumbnailer for the freedesktop/GNOME thumbnailer mechanism:
+
+- VK6 thumbnails use the wrapper BMP preview in the VK6 container.
+- VK4 thumbnails use embedded 24-bit thumbnail sections in gallery order: color, peak, light, height.
+- The thumbnailer writes the PNG output path requested by GNOME and does not modify the source file.
 
 ## Install For Local Use
 
@@ -98,6 +105,57 @@ Project checks:
 ```bash
 scripts/test_swift_renderer.sh
 scripts/build_macos_quicklook.sh --skip-codesign
+python3 -m pytest
+```
+
+## Install On GNOME / Ubuntu
+
+Install the Linux thumbnailer for the current user:
+
+```bash
+scripts/install_linux_thumbnailer.sh
+```
+
+This creates a private virtualenv under `~/.local/share/vkquicklook/linux-thumbnailer/`,
+installs `vk-thumbnailer` through `~/.local/bin/vk-thumbnailer`, registers MIME
+types under `~/.local/share/mime/packages/`, installs the thumbnailer descriptor
+under `~/.local/share/thumbnailers/`, and runs:
+
+```bash
+update-mime-database ~/.local/share/mime
+```
+
+Clear stale thumbnails and restart Nautilus after installing or rebuilding:
+
+```bash
+rm -rf ~/.cache/thumbnails/*
+nautilus -q
+```
+
+Direct CLI validation:
+
+```bash
+vk-thumbnailer --input path/to/file.vk6 --output /tmp/vk-thumb.png --size 256
+file /tmp/vk-thumb.png
+```
+
+GNOME integration checks:
+
+```bash
+xdg-mime query filetype path/to/file.vk6
+which vk-thumbnailer
+ls ~/.local/share/thumbnailers/vkquicklook.thumbnailer
+```
+
+Open a folder containing `.vk4` or `.vk6` files in GNOME Files/Nautilus and
+confirm the icons show measurement imagery instead of generic file icons.
+
+Uninstall:
+
+```bash
+scripts/uninstall_linux_thumbnailer.sh
+rm -rf ~/.cache/thumbnails/*
+nautilus -q
 ```
 
 ## Distribution Notes
@@ -112,3 +170,4 @@ Contact: vitek@vsoptomech.com
 
 - [Install and signing guide](docs/install.md)
 - [macOS Quick Look implementation notes](docs/macos_quicklook.md)
+- [Linux GNOME thumbnailer guide](docs/linux_thumbnailer.md)

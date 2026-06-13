@@ -1,0 +1,8 @@
+[Thumbnailer Entry]
+Version=1.0
+Encoding=UTF-8
+Type=X-Thumbnailer
+Name=VKQuickLook Thumbnailer
+TryExec=@VK_THUMBNAILER@
+Exec=@VK_THUMBNAILER@ --input %i --output %o --size %s
+MimeType=application/x-vsoptomech-keyence-vk4;application/x-vsoptomech-keyence-vk6;

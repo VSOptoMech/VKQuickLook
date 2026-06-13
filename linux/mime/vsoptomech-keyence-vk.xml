@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/x-vsoptomech-keyence-vk4">
+    <comment>Keyence VK4 measurement</comment>
+    <glob pattern="*.vk4"/>
+    <magic priority="80">
+      <match type="string" offset="0" value="VK4_"/>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-vsoptomech-keyence-vk6">
+    <comment>Keyence VK6 measurement</comment>
+    <glob pattern="*.vk6"/>
+    <magic priority="80">
+      <match type="string" offset="0" value="VK6"/>
+    </magic>
+  </mime-type>
+</mime-info>
