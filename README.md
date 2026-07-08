@@ -6,8 +6,6 @@ VKQuickLook helps macOS users preview Keyence VK4 and VK6 files from VK-X series
 
 This project is intended for engineers, researchers, metrology users, and microscopy users who need a lightweight Mac viewer or preview workflow for Keyence VK-X measurement data.
 
-Common search terms for this project include Keyence VK4 Quick Look, Keyence VK6 Quick Look, macOS VK4 viewer, macOS VK6 viewer, Finder thumbnails for VK4/VK6 files, Keyence VK-X file preview, Quick Look extension for Keyence files, laser confocal microscope file preview, and 3D profilometer measurement file preview.
-
 VKQuickLook is an independent open-source project and is not affiliated with,
 endorsed by, or sponsored by KEYENCE CORPORATION. KEYENCE is used only to
 identify the file formats this tool supports.
