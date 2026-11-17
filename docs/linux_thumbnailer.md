@@ -38,7 +38,7 @@ Install for the current user:
 scripts/install_linux_thumbnailer.sh
 ```
 
-The installer does not require root and refuses `sudo`. It installs:
+The user-local install runs without sudo. It installs:
 
 ```text
 ~/.local/bin/vk-thumbnailer
@@ -54,6 +54,41 @@ update-mime-database ~/.local/share/mime
 ```
 
 If `update-mime-database` is missing on Ubuntu, install `shared-mime-info`.
+
+### System Install For Nautilus Sandboxing
+
+Recent GNOME/Nautilus releases run thumbnailers in a sandbox. User-local
+thumbnailer entries can be discovered, but thumbnailer executables and Python
+virtualenvs under `/home` may not be mounted inside that sandbox. If direct
+`vk-thumbnailer` rendering works but Nautilus creates failed thumbnails without
+invoking the executable, install into `/usr/local`:
+
+```bash
+sudo scripts/install_linux_thumbnailer.sh --system
+```
+
+If you already have a user-local installation, test the new system wrapper
+directly before removing the old installation:
+
+```bash
+/usr/local/bin/vk-thumbnailer --input path/to/sample.vk4 --output /tmp/vk-system.png --size 256
+scripts/uninstall_linux_thumbnailer.sh
+```
+
+Run the uninstaller as the original user without sudo, with the same
+`XDG_DATA_HOME` used for the user-local install. This removes the user-local
+descriptor, which takes priority over the system descriptor. Each user with
+an old installation can do this independently after the system install succeeds.
+After switching, clear cached failures and restart Nautilus as described below.
+
+The system install writes:
+
+```text
+/usr/local/bin/vk-thumbnailer
+/usr/local/share/vkquicklook/linux-thumbnailer/venv/
+/usr/local/share/mime/packages/vsoptomech-keyence-vk.xml
+/usr/local/share/thumbnailers/vkquicklook.thumbnailer
+```
 
 ## Validate
 
@@ -105,6 +140,26 @@ ls ~/.local/share/thumbnailers/vkquicklook.thumbnailer
 cat ~/.local/share/thumbnailers/vkquicklook.thumbnailer
 ```
 
+If `vk-thumbnailer` works manually but Nautilus still shows a generic icon for
+a large VK file, check Nautilus' maximum thumbnail file-size setting:
+
+```bash
+gsettings describe org.gnome.nautilus.preferences thumbnail-limit
+gsettings get org.gnome.nautilus.preferences thumbnail-limit
+du --apparent-size -BM path/to/sample.vk4
+```
+
+Nautilus expresses the limit in megabytes. Check the installed
+schema with `gsettings describe`, then choose a limit above the file size. For
+example, a 300 MB limit covers a 265 MB stitched VK4. Clear cached failures
+and restart Nautilus after changing the setting:
+
+```bash
+gsettings set org.gnome.nautilus.preferences thumbnail-limit 300
+rm -rf ~/.cache/thumbnails/*
+nautilus -q
+```
+
 Rebuild the MIME database:
 
 ```bash
@@ -128,6 +183,12 @@ Remove user-local files:
 
 ```bash
 scripts/uninstall_linux_thumbnailer.sh
+```
+
+Remove system files:
+
+```bash
+sudo scripts/uninstall_linux_thumbnailer.sh --system
 ```
 
 Then clear stale thumbnails and restart Nautilus:

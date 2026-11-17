@@ -145,15 +145,41 @@ GNOME integration checks:
 xdg-mime query filetype path/to/file.vk6
 which vk-thumbnailer
 ls ~/.local/share/thumbnailers/vkquicklook.thumbnailer
+gsettings get org.gnome.nautilus.preferences thumbnail-limit
 ```
 
 Open a folder containing `.vk4` or `.vk6` files in GNOME Files/Nautilus and
 confirm the icons show measurement imagery instead of generic file icons.
 
+Recent GNOME/Nautilus releases run thumbnailers in a sandbox. If the user-local
+install renders manually but Nautilus still does not invoke it, install the
+thumbnailer into sandbox-visible `/usr/local` paths:
+
+```bash
+sudo scripts/install_linux_thumbnailer.sh --system
+```
+
+If you previously installed the thumbnailer for your user, verify the system
+wrapper at `/usr/local/bin/vk-thumbnailer` and then run
+`scripts/uninstall_linux_thumbnailer.sh` without sudo. Use the same
+`XDG_DATA_HOME` as the original user-local install. User-local descriptors take
+priority over system descriptors. Clear stale thumbnails and restart Nautilus
+after switching.
+
+If Nautilus still shows generic icons for large VK files, check its thumbnail
+size limit. Nautilus expresses `thumbnail-limit` in megabytes. For example:
+
+```bash
+gsettings set org.gnome.nautilus.preferences thumbnail-limit 300
+rm -rf ~/.cache/thumbnails/*
+nautilus -q
+```
+
 Uninstall:
 
 ```bash
 scripts/uninstall_linux_thumbnailer.sh
+sudo scripts/uninstall_linux_thumbnailer.sh --system
 rm -rf ~/.cache/thumbnails/*
 nautilus -q
 ```
