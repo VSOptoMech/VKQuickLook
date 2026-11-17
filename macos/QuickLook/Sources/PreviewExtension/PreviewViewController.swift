@@ -1,8 +1,15 @@
 import AppKit
 import QuickLookUI
 
+private final class FittedImageView: NSImageView {
+    override var intrinsicContentSize: NSSize {
+        // Quick Look supplies the viewport size. Large images must fit inside it.
+        NSSize(width: NSView.noIntrinsicMetric, height: NSView.noIntrinsicMetric)
+    }
+}
+
 final class PreviewViewController: NSViewController, QLPreviewingController {
-    private let imageView = NSImageView()
+    private let imageView = FittedImageView()
     private let statusLabel = NSTextField(labelWithString: "Rendering VK preview...")
     private let detailLabel = NSTextField(labelWithString: "")
 

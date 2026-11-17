@@ -8,6 +8,7 @@ import Foundation
 /// parser. They cover the supported image paths and key malformed-file failures.
 @main
 struct VKQuickLookRendererTests {
+    @MainActor
     static func main() {
         do {
             let root = FileManager.default.temporaryDirectory
@@ -24,11 +25,32 @@ struct VKQuickLookRendererTests {
             try testUnsupportedInput(root: root)
             try testTruncatedVK4(root: root)
             try testCorruptVK4Section(root: root)
+            try testLargePreviewFitsViewport()
             print("Swift renderer self-tests passed")
         } catch {
             fputs("Swift renderer self-tests failed: \(error.localizedDescription)\n", stderr)
             Foundation.exit(1)
         }
+    }
+
+    @MainActor
+    private static func testLargePreviewFitsViewport() throws {
+        let controller = PreviewViewController()
+        let viewport = controller.view
+        guard let imageView = viewport.subviews.compactMap({ $0 as? NSImageView }).first else {
+            throw TestFailure("Quick Look preview is missing its image view")
+        }
+        viewport.setFrameSize(NSSize(width: 1400, height: 750))
+        viewport.layoutSubtreeIfNeeded()
+        let initialFrame = imageView.frame
+        imageView.image = NSImage(size: NSSize(width: 1964, height: 2048))
+        viewport.layoutSubtreeIfNeeded()
+        try expect(imageView.frame == initialFrame, "large image must not expand the preview layout")
+
+        viewport.setFrameSize(NSSize(width: 640, height: 480))
+        viewport.layoutSubtreeIfNeeded()
+        try expect(viewport.bounds.contains(imageView.frame), "resized viewport must contain the image view")
+        try expect(imageView.frame.width < initialFrame.width, "preview image must shrink with the viewport")
     }
 
     private static func testVK4Thumbnail(root: URL) throws {

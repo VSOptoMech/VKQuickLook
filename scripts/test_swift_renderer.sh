@@ -11,8 +11,8 @@ arch="$(uname -m)"
 target="${arch}-apple-macosx13.0"
 binary="$build_dir/VKQuickLookRendererTests"
 
-# Compile the test harness from the same shared renderer source used by the app
-# and extensions. This keeps the regression test independent of Xcode projects.
+# Compile the test harness with the production renderer and preview controller.
+# This keeps the regression tests independent of Xcode projects.
 run() {
   printf '+'
   printf ' %q' "$@"
@@ -26,8 +26,10 @@ run swiftc \
   -module-name VKQuickLookRendererTests \
   -o "$binary" \
   -framework AppKit \
+  -framework QuickLookUI \
   "$source_root/Shared/NativeVKRenderer.swift" \
   "$source_root/Shared/RendererService.swift" \
+  "$source_root/PreviewExtension/PreviewViewController.swift" \
   "$source_root/Test/VKQuickLookRendererTests.swift"
 
 run "$binary"
